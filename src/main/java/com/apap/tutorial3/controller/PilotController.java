@@ -98,9 +98,12 @@ public class PilotController {
 				}
 				res = "delete";
 			}
+			else {
+				res = "error-2";
+			}
 		}
 		else {
-			return res = "error-2";
+			res = "error-2";
 		}
 		
 		return res;
