@@ -1,6 +1,7 @@
 package com.apap.tutorial3.controller;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -60,34 +61,48 @@ public class PilotController {
 	}
 	
 	@RequestMapping(value= {"/pilot/update/license-number/{licenseNumber}/fly-hour/{flyHour}"})
-	public String updateFlyHour(@PathVariable String licenseNumber, @PathVariable int flyHour, Model model) {
-		PilotModel archive = pilotService.getPilotDetailByLicenseNumber(licenseNumber);
+	public String updateFlyHour(@PathVariable Optional<String> licenseNumber, @PathVariable Optional<String> flyHour, Model model) {
+		String res="";
 		
-		if (archive == null) {
-			return "error";
+		if (licenseNumber.isPresent() && flyHour.isPresent()) {
+			PilotModel archive = pilotService.getPilotDetailByLicenseNumber(licenseNumber.get());
+			
+			if (archive != null) {
+				archive.setFlyHour(Integer.parseInt(flyHour.get()));
+				model.addAttribute("pilot", archive);
+				res = "update";
+				
+			} else {
+				res = "error";
+			}
+			
+		} else {
+			res = "error";
 		}
-		else {
-			archive.setFlyHour(flyHour);
-			model.addAttribute("pilot", archive);
-			return "update";
-		}
+		return res;
+		
 	}
 	
-	@RequestMapping(value= {"/pilot/delete/id/{id}"})
-	public String deletePilot(@PathVariable String id, Model model) {
-		PilotModel archive = pilotService.getPilotDetailById(id);
+	@RequestMapping(value= {"pilot/delete/id/", "/pilot/delete/id/{id}"})
+	public String deletePilot(@PathVariable Optional<String> id, Model model) {
+		String res="";
 		
-		if (archive == null) {
-			return "error-2";
+		if (id.isPresent()) {
+			PilotModel archive = pilotService.getPilotDetailById(id.get());
+			if (archive != null) {
+				for (int i = 0; i < pilotService.getPilotList().size(); i++) {
+					if (archive.equals(pilotService.getPilotList().get(i))) {
+						pilotService.getPilotList().remove(i);
+						break;
+					}
+				}
+				res = "delete";
+			}
 		}
 		else {
-			for (int i = 0; i < pilotService.getPilotList().size(); i++) {
-				if (archive.equals(pilotService.getPilotList().get(i))) {
-					pilotService.getPilotList().remove(i);
-					break;
-				}
-			}
-			return "delete";
+			return res = "error-2";
 		}
+		
+		return res;
 	}
 }
